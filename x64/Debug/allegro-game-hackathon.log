@@ -1,0 +1,5 @@
+﻿  game_scene.c
+C:\Users\hello\OneDrive\Gambar\allegro-game-hackathon\allegro-game-hackathon\Src\game_scene.c(60,24): warning C4047: '>=': 'int' differs in levels of indirection from 'ALLEGRO_BITMAP *'
+  win_scene.c
+  Generating Code...
+  allegro-game-hackathon.vcxproj -> C:\Users\hello\OneDrive\Gambar\allegro-game-hackathon\x64\Debug\allegro-game-hackathon.exe
