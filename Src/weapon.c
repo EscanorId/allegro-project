@@ -27,6 +27,15 @@ Weapon create_weapon(char * weapon_path, char * bullet_path, int cooldown, int s
 }
 
 void update_weapon(Weapon * weapon, BulletNode * bulletList, Point playerCoord, Point cam){
+    // Pergantian senjata
+    if (keyState[ALLEGRO_KEY_1]) { // Jika tombol '1' ditekan
+        *weapon = create_weapon("Assets/guns.png", "Assets/yellow_bullet.png", 16, 8, 10);
+        game_log("Switched to Guns");
+    }
+    else if (keyState[ALLEGRO_KEY_2]) { // Jika tombol '2' ditekan
+        *weapon = create_weapon("Assets/sniper.png", "Assets/yellow_bullet.png", 30, 15, 30);
+        game_log("Switched to Sniper");
+    }
     // Calculate Angle
     int cy = playerCoord.y - cam.y + (TILE_SIZE / 2) + 4; // destiny y axis
     int cx = playerCoord.x - cam.x + (TILE_SIZE / 2); // destiny x axis
@@ -35,16 +44,17 @@ void update_weapon(Weapon * weapon, BulletNode * bulletList, Point playerCoord, 
     weapon->angle = -atan2(dX, dY) + M_PI_2;
     
     // If mouse pressed, shoot
-    if(mouseState.buttons & 1 && weapon->cooldown_counter == 0){
+    if (mouseState.buttons & 1 && weapon->cooldown_counter == 0) {
         weapon->cooldown_counter = weapon->cooldown;
-        PointFloat center = (PointFloat){playerCoord.x + TILE_SIZE / 2, playerCoord.y + TILE_SIZE / 2};
+        PointFloat center = (PointFloat){ playerCoord.x + TILE_SIZE / 2, playerCoord.y + TILE_SIZE / 2 };
         Bullet bullet = create_bullet(weapon->bullet_path, center, weapon->angle, weapon->speed, weapon->damage);
         insertBulletList(bulletList, bullet);
+
         if (!al_play_sample(weapon->shooting_audio, SFX_VOLUME, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL)) {
             game_log("Audio not playing, please increase your RESERVE_SAMPLES variable");
         }
     }
-    else if(weapon->cooldown_counter > 0){
+    else if (weapon->cooldown_counter > 0) {
         weapon->cooldown_counter--;
     }
 }
