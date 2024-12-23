@@ -2,6 +2,7 @@
 #include "game_scene.h"
 #include "menu_scene.h"
 #include "win_scene.h"
+#include "lose_scene.h"
 #include "loading_scene.h"
 #include "game.h"
 #include "player.h"
@@ -18,7 +19,8 @@ enemyNode * enemyList; // Enemy List
 BulletNode * bulletList; // Bullet List
 
 // Weapon
-Weapon weapon; 
+Weapon weapon;
+Weapon sniper;
 int coins_obtained;
 
 static void init(void){
@@ -33,7 +35,7 @@ static void init(void){
     bulletList = createBulletList();
 
     weapon = create_weapon("Assets/guns.png", "Assets/yellow_bullet.png", 16, 8, 10);
-    
+    //weapon = create_weapon("Assets/sniper.png", "Assets/yellow_bullet.png", 16, 8, 10);
     for(int i=0; i<map.EnemySpawnSize; i++){
         Enemy enemy = createEnemy(map.EnemySpawn[i].x, map.EnemySpawn[i].y, map.EnemyCode[i]);
         insertEnemyList(enemyList, enemy);
@@ -52,6 +54,7 @@ static void update(void){
     // cek lagi kondisional kalah
     if (player.health <= 0) {
         //change_scene("lose_scene");
+        change_scene(create_lose_scene());
         printf("You loseee"); 
         return;
     }
@@ -59,7 +62,7 @@ static void update(void){
     // cek lagi kondisional menang
     if (coins_obtained >= map.coin_assets || enemyList->next == NULL) {
         //change_scene("win scene");
-        //change_scene(create_win_scene());
+        change_scene(create_win_scene());
         printf("You winnnn!!");
         return;
     }
