@@ -33,7 +33,7 @@ void update_weapon(Weapon * weapon, BulletNode * bulletList, Point playerCoord, 
         game_log("Switched to Guns");
     }
     else if (keyState[ALLEGRO_KEY_2]) { // Jika tombol '2' ditekan
-        *weapon = create_weapon("Assets/sniper.png", "Assets/yellow_bullet.png", 30, 15, 30);
+        *weapon = create_weapon("Assets/sniper.png", "Assets/orange_bullet.png", 30, 15, 30);
         game_log("Switched to Sniper");
     }
     // Calculate Angle
