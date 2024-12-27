@@ -7,10 +7,12 @@
 #include "UI.h"
 #include "game.h"
 #include "bullet.h"
+#include "loading_scene.h"
 
 
 
 static ALLEGRO_BITMAP* player_bitmap;
+static Button backButton;
 
 static void init(void) {
 
@@ -21,11 +23,15 @@ static void init(void) {
     }
 
     //change_bgm("None");
+
+    backButton = button_create(SCREEN_W / 2 - 200, 650, 400, 100, "Assets/UI_Button.png", "Assets/UI_Button_hovered.png");
 }
 
 static void update(void) {
-
-
+    update_button(&backButton);
+    if (mouseState.buttons && backButton.hovered == true) {
+        change_scene(create_loading_scene());
+    }
 }
 
 static void draw(void) {
@@ -40,7 +46,7 @@ static void draw(void) {
     al_draw_scaled_bitmap(
         player_bitmap,
         0, 0, bitmap_width, bitmap_height,  // Gambar penuh
-        SCREEN_W / 4, SCREEN_H / 2 - bitmap_height,  // Atur posisi gambar
+        SCREEN_W / 2.5, SCREEN_H / 2 - bitmap_height,  // Atur posisi gambar
         bitmap_width * 2, bitmap_height * 2,         // Skala 2x ukuran asli
         0                                           // Tidak ada flag
     );
@@ -54,12 +60,34 @@ static void draw(void) {
         ALLEGRO_ALIGN_CENTER,
         "YOU LOSE"
     );
+
+    // button back
+    draw_button(backButton);
+    //button back text
+    al_draw_text(
+        P2_FONT,
+        al_map_rgb(66, 76, 110),
+        SCREEN_W / 2,
+        650 + 28 + backButton.hovered * 11,
+        ALLEGRO_ALIGN_CENTER,
+        "RETRY"
+    );
+    al_draw_text(
+        P2_FONT,
+        al_map_rgb(225, 225, 225),
+        SCREEN_W / 2,
+        650 + 31 + backButton.hovered * 11,
+        ALLEGRO_ALIGN_CENTER,
+        "RETRY"
+    );
 }
 
 static void destroy(void) {
     if (player_bitmap) {
         al_destroy_bitmap(player_bitmap);
     }
+
+    destroy_button(&backButton);
 }
 Scene create_lose_scene(void) {
     Scene scene;
