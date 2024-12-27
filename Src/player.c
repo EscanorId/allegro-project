@@ -67,16 +67,29 @@ void update_player(Player * player, Map * map) {
         }
     */
 
-    if (keyState[ALLEGRO_KEY_W]) { //move up (subtract y axis)
-        player->status = PLAYER_WALKING;
-        player->coord.y -= player->speed;
-        player->direction = UP;
+    if (controlType == CONTROL_WASD) {
+        if (keyState[ALLEGRO_KEY_W]) { // WASD Up
+            player->status = PLAYER_WALKING;
+            player->coord.y -= player->speed;
+            player->direction = UP;
+        }
+        if (keyState[ALLEGRO_KEY_S]) { // WASD Down
+            player->status = PLAYER_WALKING;
+            player->coord.y += player->speed;
+            player->direction = DOWN;
+        }
     }
-
-    if (keyState[ALLEGRO_KEY_S]) { //move down (add y axis)
-        player->status = PLAYER_WALKING;
-        player->coord.y += player->speed;
-        player->direction = DOWN;
+    else if (controlType == CONTROL_IJKL) {
+        if (keyState[ALLEGRO_KEY_I]) { // IJKL Up
+            player->status = PLAYER_WALKING;
+            player->coord.y -= player->speed;
+            player->direction = UP;
+        }
+        if (keyState[ALLEGRO_KEY_K]) { // IJKL Down
+            player->status = PLAYER_WALKING;
+            player->coord.y += player->speed;
+            player->direction = DOWN;
+        }
     }
 
     // if Collide, snap to the grid to make it pixel perfect
@@ -101,28 +114,47 @@ void update_player(Player * player, Map * map) {
     }
     */
 
-    if (keyState[ALLEGRO_KEY_A]) { //move left (subtract x axis)
-        player->status = PLAYER_WALKING;
-        player->coord.x -= player->speed;
-        player->direction = LEFT;
-    }
-
-    if (keyState[ALLEGRO_KEY_D]) { //move right (add x axis)
-        player->status = PLAYER_WALKING;
-        player->coord.x += player->speed;
-        player->direction = RIGHT;
-
+    if (controlType == CONTROL_WASD) {
+        if (keyState[ALLEGRO_KEY_A]) { // WASD Left
+            player->status = PLAYER_WALKING;
+            player->coord.x -= player->speed;
+            player->direction = LEFT;
+        }
+        if (keyState[ALLEGRO_KEY_D]) { // WASD Right
+            player->status = PLAYER_WALKING;
+            player->coord.x += player->speed;
+            player->direction = RIGHT;
+        }
+    } else if (controlType == CONTROL_IJKL) {
+        if (keyState[ALLEGRO_KEY_J]) { // IJKL Left
+            player->status = PLAYER_WALKING;
+            player->coord.x -= player->speed;
+            player->direction = LEFT;
+        }
+        if (keyState[ALLEGRO_KEY_L]) { // IJKL Right
+            player->status = PLAYER_WALKING;
+            player->coord.x += player->speed;
+            player->direction = RIGHT;
+        }
     }
 
     if (isCollision(player, map)) {
         player->coord.x = round((float)original.x / (float)TILE_SIZE) * TILE_SIZE;
     }
-
+    if (
+        !(keyState[ALLEGRO_KEY_W] || keyState[ALLEGRO_KEY_S] ||
+            keyState[ALLEGRO_KEY_A] || keyState[ALLEGRO_KEY_D] ||
+            keyState[ALLEGRO_KEY_I] || keyState[ALLEGRO_KEY_K] ||
+            keyState[ALLEGRO_KEY_J] || keyState[ALLEGRO_KEY_L])
+        ) {
+        player->status = PLAYER_IDLE;
+    }
     /*
         [TODO Homework]
 
         Calculate the animation tick to draw animation later
     */
+
     player->animation_tick = (player->animation_tick + 1) % 64; //reset back to 0 after it reaches 64, consists of fixed no. of cycles
 
 }
@@ -138,32 +170,40 @@ void draw_player(Player * player, Point cam) {
 
         Draw Animation of Dying, Walking, and Idle
     */
+
+    // Set flip based on direction
+    if (player->direction == LEFT) {
+        flag = 0;// Tidak flip (arah kanan)
+    }
+    else {
+        flag = ALLEGRO_FLIP_HORIZONTAL; 
+    }
+
     if (player->status == PLAYER_IDLE) {
-        int offset = 32 * (int)(player->animation_tick / 22);
+        int offset = 32 * ((int)(player->animation_tick / 30)%2);
         al_draw_tinted_scaled_bitmap(player->image, al_map_rgb(255, 255, 255),
             offset, 0, 32, 32, // source image x, y, width, height
-            dx, dy, TILE_SIZE, TILE_SIZE, //destiny x, y, width, height
-            flag //flip or not
+            dx, dy, TILE_SIZE, TILE_SIZE, // destiny x, y, width, height
+            flag // flip or not
         );
-
     }
 
 
     if (player->status == PLAYER_WALKING) {
-        int offset = 32 * (int)(player->animation_tick/16);
+        int offset = 32 * ((int)(player->animation_tick / 16)%4);
         al_draw_tinted_scaled_bitmap(player->image, al_map_rgb(255, 255, 255),
             offset, 32, 32, 32, // source image x, y, width, height
-            dx, dy, TILE_SIZE, TILE_SIZE, //destiny x, y, width, height
-            flag //flip or not
+            dx, dy, TILE_SIZE, TILE_SIZE, // destiny x, y, width, height
+            flag // flip or not
         );
     }
 
     if (player->status == PLAYER_DYING) {
-        int offset = 32 * (int)(player->animation_tick / 22);
+        int offset = 32 * ((int)(player->animation_tick / 22)%4);
         al_draw_tinted_scaled_bitmap(player->image, al_map_rgb(255, 255, 255),
             offset, 64, 32, 32, // source image x, y, width, height
-            dx, dy, TILE_SIZE, TILE_SIZE, //destiny x, y, width, height
-            flag //flip or not
+            dx, dy, TILE_SIZE, TILE_SIZE, // destiny x, y, width, height
+            flag // flip or not
         );
     }
 
