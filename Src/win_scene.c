@@ -11,6 +11,7 @@
 
 
 static ALLEGRO_BITMAP* player_bitmap;
+static Button menuButton;
 
 static void init(void) {
 
@@ -20,12 +21,16 @@ static void init(void) {
         game_abort("Failed to load player bitmap");
     }
 
+    menuButton = button_create(SCREEN_W / 2 - 200, 650, 400, 100, "Assets/UI_Button.png", "Assets/UI_Button_hovered.png");
     //change_bgm("None");
+    
 }
 
 static void update(void) {
-
-
+    update_button(&menuButton);
+    if (mouseState.buttons && menuButton.hovered == true) {
+        change_scene(create_menu_scene());
+    }
 }
 
 static void draw(void) {
@@ -40,7 +45,7 @@ static void draw(void) {
     al_draw_scaled_bitmap(
         player_bitmap,
         0, 0, bitmap_width, bitmap_height,  // Gambar penuh
-        SCREEN_W / 4, SCREEN_H / 2 - bitmap_height,  // Atur posisi gambar
+        SCREEN_W / 2.5, SCREEN_H / 2 - bitmap_height,  // Atur posisi gambar
         bitmap_width * 2, bitmap_height * 2,         // Skala 2x ukuran asli
         0                                           // Tidak ada flag
     );
@@ -54,12 +59,34 @@ static void draw(void) {
         ALLEGRO_ALIGN_CENTER,
         "YOU WIN"
     );
+
+    // button back
+    draw_button(menuButton);
+    //button back text
+    al_draw_text(
+        P2_FONT,
+        al_map_rgb(66, 76, 110),
+        SCREEN_W / 2,
+        650 + 28 + menuButton.hovered * 11,
+        ALLEGRO_ALIGN_CENTER,
+        "MAIN MENU"
+    );
+    al_draw_text(
+        P2_FONT,
+        al_map_rgb(225, 225, 225),
+        SCREEN_W / 2,
+        650 + 31 + menuButton.hovered * 11,
+        ALLEGRO_ALIGN_CENTER,
+        "MAIN MENU"
+    );
 }
 
 static void destroy(void) {
     if (player_bitmap) {
         al_destroy_bitmap(player_bitmap);
     }
+
+    destroy_button(&menuButton);
 }
 
 
