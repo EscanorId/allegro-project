@@ -5,7 +5,7 @@
 //#define GAME_HEIGHT 600 // cek variable height mengarah kemana
 
 #include "utility.h"
-
+extern int coins_obtained;
 Scene create_game_scene(void);
 
 //void draw_player(Player * player, Point cam);
