@@ -7,11 +7,11 @@
 #include "UI.h"
 #include "game.h"
 #include "bullet.h"
-
+#include "submit_scene.h"
 
 
 static ALLEGRO_BITMAP* player_bitmap;
-static Button menuButton;
+static Button scoreButton;
 
 static void init(void) {
 
@@ -21,15 +21,15 @@ static void init(void) {
         game_abort("Failed to load player bitmap");
     }
 
-    menuButton = button_create(SCREEN_W / 2 - 200, 650, 400, 100, "Assets/UI_Button.png", "Assets/UI_Button_hovered.png");
+    scoreButton = button_create(SCREEN_W / 2 - 200, 650, 400, 100, "Assets/UI_Button.png", "Assets/UI_Button_hovered.png");
     //change_bgm("None");
     
 }
 
 static void update(void) {
-    update_button(&menuButton);
-    if (mouseState.buttons && menuButton.hovered == true) {
-        change_scene(create_menu_scene());
+    update_button(&scoreButton);
+    if (mouseState.buttons && scoreButton.hovered == true) {
+        change_scene(create_submit_scene());
     }
 }
 
@@ -61,23 +61,23 @@ static void draw(void) {
     );
 
     // button back
-    draw_button(menuButton);
+    draw_button(scoreButton);
     //button back text
     al_draw_text(
         P2_FONT,
         al_map_rgb(66, 76, 110),
         SCREEN_W / 2,
-        650 + 28 + menuButton.hovered * 11,
+        650 + 28 + scoreButton.hovered * 11,
         ALLEGRO_ALIGN_CENTER,
-        "MAIN MENU"
+        "ENTER SCORE"
     );
     al_draw_text(
         P2_FONT,
         al_map_rgb(225, 225, 225),
         SCREEN_W / 2,
-        650 + 31 + menuButton.hovered * 11,
+        650 + 31 + scoreButton.hovered * 11,
         ALLEGRO_ALIGN_CENTER,
-        "MAIN MENU"
+        "ENTER SCORE"
     );
 }
 
@@ -86,7 +86,7 @@ static void destroy(void) {
         al_destroy_bitmap(player_bitmap);
     }
 
-    destroy_button(&menuButton);
+    destroy_button(&scoreButton);
 }
 
 
