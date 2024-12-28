@@ -3,6 +3,8 @@
 #include <stdlib.h>
 
 #include "map.h"
+#include "player.h"
+
 
 /*
     [OFFSET CALCULATOR FUNCTIONS]
@@ -14,10 +16,10 @@ static Point get_wall_offset_assets(Map * map, int i, int j);
 static Point get_floor_offset_assets(Map * map, int i, int j);
 static Point get_hole_offset_assets(Map * map, int i, int j);
 static const int offset = 16;
-
+Player player;
 
 static bool tile_collision(Point player, Point tile_coord);
-
+bool coin_collected = false;
 Map create_map(char * path, uint8_t type){
     Map map;
 
@@ -74,6 +76,12 @@ Map create_map(char * path, uint8_t type){
                     map.EnemySpawn[map.EnemySpawnSize++] = (Point){i, j};
                     break;
 
+                case 'Z': // Slime Enemy
+                    map.map[i][j] = FLOOR;
+                    map.EnemyCode[map.EnemySpawnSize] = ch;
+                    map.EnemySpawn[map.EnemySpawnSize++] = (Point){ i, j };
+                    break;
+
                 case 'C': // Coins
                     map.map[i][j] = COIN;
                     coin_counter++;
@@ -82,6 +90,9 @@ Map create_map(char * path, uint8_t type){
                 case '_': // Nothing
                     map.map[i][j] = HOLE;
                     break;
+				case 'H': // Health Potion
+					map.map[i][j] = HEALTH_POTION;
+					break;
 
                 default: // If not determined, set it as black
                     map.map[i][j] = NOTHING;
@@ -108,6 +119,11 @@ Map create_map(char * path, uint8_t type){
         game_abort("Can't load coin audio");
     }
 
+	map.health_potion = al_load_bitmap("Assets/health_potion.png");
+    if (!map.health_potion) {
+        game_abort("Can't load health potion");
+    }
+
     fclose(f);
     
     return map;
@@ -132,12 +148,42 @@ void draw_map(Map * map, Point cam){
                                   );
 
             switch(map->map[i][j]){
-                case COIN:
-                    al_draw_scaled_bitmap(map->coin_assets,
-                        0, 0, 16, 16,
-                        dx, dy, TILE_SIZE, TILE_SIZE,
-                        0);
-                    break;
+                
+            case COIN: {
+                // Hitung frame berdasarkan waktu dan kondisi
+                int total_frames = 8;                     // Total frame per baris
+                int frame_width = 16;                     // Lebar frame
+                int frame_height = 16;                    // Tinggi frame
+                float animation_speed = 0.1;              // Kecepatan animasi dalam detik per frame
+                int current_frame = (int)(al_get_time() / animation_speed) % total_frames;
+
+                // Baris animasi (0 = berputar, 1 = mendapatkan koin)
+                int row = coin_collected ? 1 : 0;         // Gunakan baris kedua jika mendapatkan koin
+
+                al_draw_tinted_scaled_bitmap(
+                    map->coin_assets,
+                    al_map_rgba_f(1, 1, 1, 1),            // Warna asli tanpa tint
+                    current_frame * frame_width,          // Posisi x frame sumber
+                    row * frame_height,                   // Posisi y frame sumber
+                    frame_width,                          // Lebar frame
+                    frame_height,                         // Tinggi frame
+                    dx, dy,                               // Posisi tujuan di layar
+                    TILE_SIZE, TILE_SIZE,                 // Ukuran di layar
+                    0                                     // Tidak ada flag
+                );
+
+                if (coin_collected && current_frame == total_frames - 1) {
+                    // Reset setelah animasi selesai
+                    coin_collected = false;
+                }
+                break;
+            }
+				case HEALTH_POTION:
+					al_draw_scaled_bitmap(map->health_potion,
+						0, 0, 32, 32,
+						dx, dy, TILE_SIZE, TILE_SIZE,
+						0);
+					break;
                 default:
                     break;
             }
@@ -156,6 +202,37 @@ void update_map(Map * map, Point player_coord, int* total_coins){
         Hint: To check if it's collide with object in map, you can use tile_collision function
         e.g. to update the coins if you touch it
     */
+    // Hitbox tile koordinat berdasarkan posisi pemain
+    int tile_x = player_coord.y / TILE_SIZE;
+    int tile_y = player_coord.x / TILE_SIZE;
+
+    // Pastikan koordinat berada dalam rentang map
+    if (tile_x < 0 || tile_x >= map->row || tile_y < 0 || tile_y >= map->col)
+        return;
+
+    // Periksa apakah tile yang disentuh adalah COIN
+    if (map->map[tile_x][tile_y] == COIN) {
+        // Hilangkan koin dari map
+        map->map[tile_x][tile_y] = FLOOR;
+
+        // Tambahkan nilai ke total_coins
+        (*total_coins)++;
+        
+        // Mainkan suara koin jika ada
+        if (map->coin_audio) {
+            al_play_sample(map->coin_audio, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+        }
+    }
+
+    if (map->map[tile_x][tile_y] == HEALTH_POTION) {
+        // Hilangkan health_potion dari map
+        map->map[tile_x][tile_y] = FLOOR;
+
+        // Tambahkan health ke player
+        printf("health player before get item: %d\n", player.health);
+        player.health += 30;
+        printf("health player after get item: %d\n", player.health);
+    }
 
 }
 
@@ -173,7 +250,7 @@ void destroy_map(Map * map){
 }
 
 bool isWalkable(BLOCK_TYPE block){
-    if(block == FLOOR ||  block == COIN) return true;
+    if(block == FLOOR ||  block == COIN || block == HEALTH_POTION) return true;
     return false;
 }
 
@@ -376,6 +453,9 @@ static void get_map_offset(Map * map){
                     break;
                 case FLOOR:
                 case COIN:
+                    map->offset_assets[i][j] = get_floor_offset_assets(map, i, j);
+                    break;
+                case HEALTH_POTION:
                     map->offset_assets[i][j] = get_floor_offset_assets(map, i, j);
                     break;
 
