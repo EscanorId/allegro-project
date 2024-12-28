@@ -12,6 +12,7 @@
  */
 
 ALLEGRO_BITMAP* slimeBitmap;
+ALLEGRO_BITMAP* slimeBitmap2;
 
 // To check if p0 sprite and p1 sprite can go directly
 static bool validLine(Map* map, Point p0, Point p1);
@@ -36,6 +37,11 @@ void initEnemy(void) {
     slimeBitmap = al_load_bitmap(slimePath);
     if (!slimeBitmap) {
         game_abort("Error Load Bitmap with path : %s", slimePath);
+    }
+    char* slimePath2 = "Assets/Slime2.png";
+    slimeBitmap2 = al_load_bitmap(slimePath2);
+    if (!slimeBitmap2) {
+        game_abort("Error Load Bitmap with path : %s", slimePath2);
     }
 }
 
@@ -62,6 +68,12 @@ Enemy createEnemy(int row, int col, char type) {
         enemy.image = slimeBitmap;
         break;
         // Insert more here to have more enemy variant
+    case 'Z':
+        enemy.health = 200;
+        enemy.type = slime;
+        enemy.speed = 3;
+        enemy.image = slimeBitmap2;
+        break;
     default:
         enemy.health = 100;
         enemy.type = slime;
@@ -149,12 +161,8 @@ bool updateEnemy(Enemy* enemy, Map* map, Player* player) {
                 enemy->coord = next;
         }
 
-        if (enemy->type == slime) {
-            if (playerCollision(enemy->coord, player->coord) && enemy->animation_hit_tick == 0) {
-                enemy->animation_tick = 0;
-                enemy->animation_hit_tick = 32;
-                hitPlayer(player, enemy->coord, 10);
-            }
+        if (enemy->type == slime && playerCollision(enemy->coord, player->coord)) {
+            hitPlayer(player, enemy->coord, 10);
         }
     }
 
@@ -212,6 +220,7 @@ void destroyEnemy(Enemy* enemy) {
 
 void terminateEnemy(void) {
     al_destroy_bitmap(slimeBitmap);
+    al_destroy_bitmap(slimeBitmap2);
 }
 
 void hitEnemy(Enemy* enemy, int damage, float angle) {
@@ -460,16 +469,9 @@ static Point findScaledDistance(Point p1, Point p2) {
 
 
 static bool playerCollision(Point enemyCoord, Point playerCoord) {
-    // Rectangle & Rectanlge Collision
-    if (enemyCoord.x < playerCoord.x + TILE_SIZE &&
-        enemyCoord.x + TILE_SIZE > playerCoord.x &&
-        enemyCoord.y < playerCoord.y + TILE_SIZE &&
-        enemyCoord.y + TILE_SIZE > playerCoord.y) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    int dx = abs(enemyCoord.x - playerCoord.x);
+    int dy = abs(enemyCoord.y - playerCoord.y);
+    return dx < TILE_SIZE && dy < TILE_SIZE;
 }
 
 static bool isCollision(Point enemyCoord, Map* map) {
