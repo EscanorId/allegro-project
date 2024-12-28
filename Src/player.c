@@ -94,7 +94,7 @@ void update_player(Player * player, Map * map) {
 
     // if Collide, snap to the grid to make it pixel perfect
     if (isCollision(player, map)) {
-        player->coord.y = round((float)original.y / (float)TILE_SIZE) * TILE_SIZE;
+        player->coord.y = max(0, min(player->coord.y, map->row * TILE_SIZE - TILE_SIZE));
     }
 
     /*
@@ -139,7 +139,7 @@ void update_player(Player * player, Map * map) {
     }
 
     if (isCollision(player, map)) {
-        player->coord.x = round((float)original.x / (float)TILE_SIZE) * TILE_SIZE;
+        player->coord.x = max(0, min(player->coord.x, map->col * TILE_SIZE - TILE_SIZE));
     }
     if (
         !(keyState[ALLEGRO_KEY_W] || keyState[ALLEGRO_KEY_S] ||
@@ -288,8 +288,14 @@ void hitPlayer(Player * player, Point enemy_coord, int damage) {
         //BOOKMARK TO CHECK AGAIN
         player->knockback_angle = angle;
         player->knockback_CD = 32;
-
+        printf("enemy touch player");
         player->health -= damage;
+
+        // Knockback player
+        int knockback_distance = TILE_SIZE / 2;
+        //float angle = atan2(player->coord.y - enemyCoord.y, player->coord.x - enemyCoord.x);
+        player->coord.x += knockback_distance * cos(angle);
+        player->coord.y += knockback_distance * sin(angle);
 
         if (player->health <= 0) {
             player->health = 0;
